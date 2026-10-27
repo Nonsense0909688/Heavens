@@ -8,3 +8,6 @@ export { cmdCompare } from './compare.js';
 export { cmdFlow } from './flow.js';
 export { cmdBench } from './bench.js';
 export { cmdInit } from './init.js';
+
+export { cmdImport, cmdExport } from './import-export.js';
+export { cmdMock } from './mock.js';

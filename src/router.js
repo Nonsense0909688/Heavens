@@ -21,6 +21,9 @@ const COMMAND_TABLE = {
   flow: cmd.cmdFlow,
   bench: cmd.cmdBench,
   init: cmd.cmdInit,
+  import: cmd.cmdImport,
+  export: cmd.cmdExport,
+  mock: cmd.cmdMock,
 };
 
 export async function dispatch(ctx) {

@@ -37,6 +37,12 @@ ENVIRONMENTS AND SAFETY
   protected environment fails safely without being sent.
   A request saved with --requires-env runs only against that environment.
 
+IMPORT, EXPORT, AND EXTEND
+  import FILE --format curl|postman|openapi   Import requests as JSON templates
+  export FILE.json --format openapi           Export templates as OpenAPI
+  heaven get URL --curl                        Print a cURL command without sending
+  mock fixtures.json --port 8080               Run a local JSON mock server
+
 COMPARE, REPLAY, TEST
   compare   Send one request to two environments and diff the results
   history   Browse past requests (secrets redacted, no response bodies)
@@ -97,6 +103,9 @@ Run "heaven help <command>" for examples and details.
 `;
 
 export const COMMANDS = {
+  import: `heaven import FILE --format curl|postman|openapi\nPrint imported request templates as JSON.`,
+  export: `heaven export FILE.json --format openapi\nExport request templates as an OpenAPI document.`,
+  mock: `heaven mock fixtures.json [--port 8080]\nServe fixtures keyed by \"METHOD /path\".`,
   request: `
 heaven METHOD URL [options]
 

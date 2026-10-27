@@ -30,6 +30,17 @@ export const VALUE_FLAGS = {
   'max-buffer': {},
   'max-p95': {},
   'requires-env': {},
+  format: {},
+  port: {},
+  'plugin-dir': {},
+  'watch-interval': {},
+  'ramp-up': {},
+  'junit-output': {},
+  'html-report': {},
+  'json-report': {},
+  'assert-header': { list: true },
+  'assert-body': { list: true },
+  'json-schema': {},
 };
 
 // On/off flags.  name -> short alias (or null)
@@ -51,6 +62,10 @@ export const BOOL_FLAGS = {
   stream: null,
   protected: null,
   'dry-run': null,
+  curl: null,
+  watch: null,
+  mock: null,
+  color: null,
 };
 
 // Reverse lookups for short flags:  'H' -> 'header',  'i' -> 'include'
