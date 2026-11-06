@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { parseYaml } from './yaml.js';
 
 function unquote(value) {
   const s = String(value ?? '');
@@ -64,7 +65,12 @@ export function parseOpenAPI(spec, baseUrl) {
   const requests = [];
   for (const [route, methods] of Object.entries(spec.paths ?? {})) for (const [method, operation] of Object.entries(methods ?? {})) {
     if (!['get','post','put','patch','delete','head','options'].includes(method.toLowerCase())) continue;
-    requests.push({ name: operation.operationId ?? operation.summary ?? `${method.toUpperCase()} ${route}`, method: method.toUpperCase(), url: `${server.replace(/\/$/, '')}${route}`, headers: {} });
+    const url = `${server.replace(/\/$/, '')}${route}`;
+    const out = { name: operation.operationId ?? operation.summary ?? `${method.toUpperCase()} ${route}`, method: method.toUpperCase(), url, headers: {} };
+    const params = operation.parameters ?? [];
+    const query = params.filter(p => p.in === 'query' && p.name).map(p => `${p.name}=`);
+    if (query.length) out.query = query;
+    requests.push(out);
   }
   return requests;
 }
@@ -72,7 +78,14 @@ export function parseOpenAPI(spec, baseUrl) {
 export function readImportFile(file, format) {
   const text = fs.readFileSync(file, 'utf8');
   if (format === 'curl') return [parseCurl(text)];
-  const parsed = JSON.parse(text);
+  let parsed;
+  try { parsed = JSON.parse(text); }
+  catch {
+    if (format === 'openapi' || format === 'swagger' || /\.ya?ml$/i.test(file)) {
+      parsed = parseYaml(text);
+      if (!parsed || typeof parsed !== 'object') throw new Error('Could not parse YAML file');
+    } else throw new Error('Invalid JSON import file');
+  }
   if (format === 'postman') return parsePostman(parsed);
   if (format === 'openapi' || format === 'swagger') return parseOpenAPI(parsed);
   throw new Error(`Unsupported import format: ${format}`);

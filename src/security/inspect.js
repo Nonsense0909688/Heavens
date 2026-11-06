@@ -26,7 +26,7 @@ export function redactedPlaces(t) {
   for (const q of t.query || []) {
     if (q.includes(REDACTED)) places.push(`query ${q.split('=')[0]}  (re-supply with -q ${q.split('=')[0]}=…)`);
   }
-  if (t.url.includes(REDACTED)) places.push('URL query string  (re-supply the full URL)');
+  if (t.url?.includes(REDACTED)) places.push('URL query string  (re-supply the full URL)');
   if (t.body && JSON.stringify(t.body).includes(REDACTED)) places.push('request body  (re-supply with --json / --data / --form)');
   return places;
 }

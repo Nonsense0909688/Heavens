@@ -21,7 +21,7 @@ function summarize(samples, count, concurrency, wallMs) {
   };
 }
 
-export async function runBench(resolved, { count, concurrency, onProgress }) {
+export async function runBench(resolved, { count, concurrency, onProgress, engine = {} }) {
   const samples = [];
   let next = 0;                       // shared counter: each worker claims the next request number
   const startedAt = performance.now();
@@ -32,7 +32,7 @@ export async function runBench(resolved, { count, concurrency, onProgress }) {
       if (i >= count) return;
       const s = performance.now();
       try {
-        const r = await executeRequest(resolved, { discard: true });
+        const r = await executeRequest(resolved, { discard: true, ...engine });
         samples.push({ ms: performance.now() - s, status: r.status, size: r.size });
       } catch (e) {
         samples.push({ ms: performance.now() - s, error: e.message });
