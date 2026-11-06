@@ -13,6 +13,10 @@ export function toNetworkError(e, req) {
     return new NetworkError(`Request timed out after ${req.timeout} ms`, 'ETIMEDOUT');
   }
 
+  if (e?.cause?.message === 'bad port') {
+    return new NetworkError(`Port is on the fetch standard's blocked list (${req.url}). Use a different port.`, 'EBADPORT');
+  }
+
   const code = e?.cause?.code || e?.code;
   if (code === 'ERR_INVALID_URL') return new HeavenError(`Invalid URL: ${req.url}`);
   if (code === 'ECONNREFUSED') return new NetworkError(`Connection refused (${req.url}). Is the server running?`, code);

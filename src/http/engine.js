@@ -6,6 +6,11 @@ import { buildFetchBody } from './request-body.js';
 import { readBody } from './read-body.js';
 import { decodeBody } from './decode-body.js';
 import { CookieJar } from './cookie-jar.js';
+import fs from 'node:fs';
+
+const VERSION = (() => {
+  try { return JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version; } catch { return 'dev'; }
+})();
 
 export const DEFAULT_MAX_BUFFER = 10 * 1024 * 1024; // 10 MB kept in memory for display
 
@@ -27,13 +32,20 @@ function proxyUrlFrom(opts) {
   return u.protocol === 'https:' ? (process.env.HTTPS_PROXY ?? process.env.https_proxy) : (process.env.HTTP_PROXY ?? process.env.http_proxy);
 }
 
-async function dispatcherFor(proxy) {
+let warnedProxy = false;
+async function dispatcherFor(proxy, explicit) {
   if (!proxy) return undefined;
   try {
     const { ProxyAgent } = await import('undici');
     return new ProxyAgent(proxy);
   } catch {
-    throw new HeavenError(`Proxy support needs the optional "undici" package (npm i undici) for --proxy ${proxy}`);
+    if (explicit) throw new HeavenError(`Proxy support needs the optional "undici" package (npm i undici) for --proxy ${proxy}`);
+    // Proxy came from HTTP(S)_PROXY, not from the user's flags: don't break every request over it.
+    if (!warnedProxy) {
+      warnedProxy = true;
+      process.stderr.write(`warning: HTTP(S)_PROXY is set but "undici" is not installed, so the proxy is ignored (npm i undici)\n`);
+    }
+    return undefined;
   }
 }
 
@@ -46,10 +58,13 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 export async function executeRequest(req, opts = {}) {
   const { outputFile, onChunk, discard = false, maxBuffer = DEFAULT_MAX_BUFFER, retry = 0, retryDelay = 500, proxy, cookieJar, cookieJarFile } = opts;
   const jar = cookieJar ?? (cookieJarFile ? new CookieJar(cookieJarFile) : undefined);
-  const attempts = Math.max(0, Number(retry) || 0) + 1;
-  const dispatcher = await dispatcherFor(proxyUrlFrom({ ...opts, url: req.url, proxy }));
+  // Never retry writes: a repeated POST/PATCH could duplicate side effects.
+  const retriable = !/^(POST|PATCH)$/i.test(req.method ?? 'GET');
+  const attempts = retriable ? Math.max(0, Number(retry) || 0) + 1 : 1;
+  const dispatcher = await dispatcherFor(proxyUrlFrom({ ...opts, url: req.url, proxy }), Boolean(proxy));
 
   const headers = { ...(req.headers ?? {}) };
+  if (!Object.keys(headers).some((k) => k.toLowerCase() === 'user-agent')) headers['user-agent'] = `heaven/${VERSION}`;
   if (jar) {
     const hasCookie = Object.keys(headers).some(k => k.toLowerCase() === 'cookie');
     const cookie = jar.headerFor(req.url);

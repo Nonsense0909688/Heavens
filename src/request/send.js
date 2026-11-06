@@ -4,6 +4,9 @@ import { prepare } from './prepare.js';
 import { executeRequest } from '../http/engine.js';
 import { redactTemplate } from '../security/redact.js';
 import { confirmProtectedRequest } from '../cli/confirm.js';
+import { HeavenError } from '../core/errors.js';
+
+const isSafeMethod = (m) => String(m).toUpperCase() === 'GET';
 
 /** Pick the environment: explicit name > active one > none. */
 export function resolveEnv(store, envName) {
@@ -32,6 +35,7 @@ export async function sendTemplate(store, template, opts = {}) {
     record = true,
     onPrepared,
     dryRun = false,
+    assumeYes = false,
   } = opts;
 
   const { name: env, env: envDef } = resolveEnv(store, envName);
@@ -55,8 +59,8 @@ export async function sendTemplate(store, template, opts = {}) {
   }
 
   // Confirm writes to protected environments before sending.
-  if (envDef.protected && resolved.method.toUpperCase() !== 'GET') {
-    const confirmed = await confirmProtectedRequest(env, resolved.method);
+  if (envDef.protected && !isSafeMethod(resolved.method)) {
+    const confirmed = await confirmProtectedRequest(env, resolved.method, { assumeYes });
 
     if (!confirmed) {
       throw new HeavenError('Request cancelled by user.');
