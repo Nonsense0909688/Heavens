@@ -22,7 +22,7 @@ function targetFromArgs(ctx) {
 /** Send to both environments in parallel. A network failure on one side is reported, not thrown. */
 async function sendToBoth(ctx, template, envs) {
   const cliVars = varsFromFlags(ctx.flags);
-  const attempt = (envName) => sendTemplate(ctx.store, template, { envName, cliVars, record: false })
+  const attempt = (envName) => sendTemplate(ctx.store, template, { envName, cliVars, record: false, assumeYes: Boolean(ctx.flags.yes) })
     .then((s) => ({ ok: true, res: s.res }), (error) => ({ ok: false, error }));
   const sides = await Promise.all(envs.map(attempt));
 

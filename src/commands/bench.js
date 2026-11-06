@@ -4,6 +4,7 @@ import { last } from '../cli/value-parsers.js';
 import { templateFromFlags, mergeTemplate } from '../request/template.js';
 import { prepare } from '../request/prepare.js';
 import { resolveEnv, buildVars } from '../request/send.js';
+import { confirmProtectedRequest } from '../cli/confirm.js';
 import { runBench } from '../features/bench/run-bench.js';
 import { statusColor, formatMs } from '../render/index.js';
 import { isMethod, isJsonOutput, printJson, checkOutputFlag, cliVarsFromFlags, warnInsecure, numberFlag } from './shared.js';
@@ -34,7 +35,8 @@ function printReport(ctx, r, maxP95, p95Exceeded) {
   out.write(`${c.bold('requests')}   ${r.requests} in ${formatMs(r.durationMs)}  (${r.requestsPerSecond} req/s)\n`);
   out.write(`${c.bold('errors')}     ${r.failures > 0 ? c.red(`${r.failures} (${r.errorRate}%)`) : c.green('0')}\n`);
   out.write(`${c.bold('status')}     ${statuses}\n`);
-  out.write(`${c.bold('latency')}    min ${L.min} · mean ${L.mean} · p50 ${L.p50} · p90 ${L.p90} · p95 ${L.p95} · p99 ${L.p99} · max ${L.max}  ${c.dim('(ms)')}\n`);
+  const n = (v) => (v === null || v === undefined ? 'n/a' : v);
+  out.write(`${c.bold('latency')}    min ${n(L.min)} · mean ${n(L.mean)} · p50 ${n(L.p50)} · p90 ${n(L.p90)} · p95 ${n(L.p95)} · p99 ${n(L.p99)} · max ${n(L.max)}  ${c.dim('(ms)')}\n`);
   for (const [msg, n] of Object.entries(r.errors)) out.write(c.red(`  ${n}× ${msg}\n`));
   if (maxP95 !== undefined) {
     out.write(p95Exceeded ? c.red(`✗ p95 ${L.p95} ms exceeds limit ${maxP95} ms\n`) : c.green(`✓ p95 within ${maxP95} ms\n`));
@@ -49,8 +51,13 @@ export async function cmdBench(ctx) {
   const { count, concurrency } = readLimits(flags);
 
   warnInsecure(ctx);
-  const { env } = resolveEnv(store, last(flags.env));
+  const { name: envName, env } = resolveEnv(store, last(flags.env));
   const resolved = prepare(template, { env, vars: buildVars(env, {}, cliVarsFromFlags(flags)) });
+
+  // Benchmarks fire many requests: a write to a protected environment must be confirmed too.
+  if (env.protected && !(await confirmProtectedRequest(envName, resolved.method, { assumeYes: Boolean(flags.yes) }))) {
+    throw new HeavenError('Benchmark cancelled by user.');
+  }
 
   const quiet = flags.silent || isJsonOutput(ctx);
   if (!flags.silent && !isJsonOutput(ctx)) {

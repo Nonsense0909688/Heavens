@@ -95,6 +95,7 @@ ASSERTION OPTIONS
 
 SAFETY AND HISTORY OPTIONS
   --protected               Mark an environment as protected (env set)
+  -y, --yes                 Pre-confirm writes to a protected environment
   --requires-env NAME       Restrict a saved request to one environment (save)
   --no-history              Do not record this request in history
   --no-fail                 Exit 0 on HTTP 4xx/5xx responses
@@ -236,7 +237,7 @@ OPTIONS
   --protected        Require interactive confirmation for every non-GET
                      request to this environment. If confirmation cannot be
                      obtained (non-interactive session), the request fails
-                     safely without being sent.
+                     safely without being sent. Pass --yes to pre-confirm.
 
 EXAMPLES
   heaven env set staging --base-url https://staging.example.com --protected

@@ -59,6 +59,7 @@ export const BOOL_FLAGS = {
   pretty: null,
   stream: null,
   protected: null,
+  yes: 'y',
   'dry-run': null,
   curl: null,
   color: null,

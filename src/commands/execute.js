@@ -1,16 +1,23 @@
 // Send a template, show the result, and decide the exit code.
 // Used by: <method>, run, replay.
+import fs from 'node:fs';
+import path from 'node:path';
 import { HeavenError, EXIT } from '../core/errors.js';
 import { last } from '../cli/value-parsers.js';
 import { sendTemplate } from '../request/send.js';
 import { evaluate } from '../assertions/evaluate.js';
 import { checkOutputFlag, cliVarsFromFlags, warnInsecure } from './shared.js';
 import { showResponse, printRequestVerbose } from './show-response.js';
+import { redactHeaders, redactUrl } from '../security/redact.js';
 
 /** Flags that control how the response body is consumed. */
 function engineOptions(flags, out) {
   const engine = {};
-  if (flags['output-file']) engine.outputFile = flags['output-file']; // stream to disk
+  if (flags['output-file']) {
+    const dir = path.dirname(flags['output-file']);
+    if (!fs.existsSync(dir)) throw new HeavenError(`Cannot write ${flags['output-file']}: directory "${dir}" does not exist`);
+    engine.outputFile = flags['output-file']; // stream to disk
+  }
   if (flags.stream) engine.onChunk = (chunk) => out.write(chunk); // print as it arrives
   if (flags['max-buffer'] !== undefined) {
     const megabytes = Number(flags['max-buffer']);
@@ -43,11 +50,11 @@ function exitCodeFor(res, template, checks, flags) {
 
 export function formatDryRun(request, c) {
   return [
-    c.bold(' DRY RUN ') + c.dim('— Request not sent'),
+    c.bold(' DRY RUN ') + c.dim('— Request not sent (secrets masked)'),
     '',
     `${c.dim('Method:')}  ${c.cyan(request.method ?? 'GET')}`,
-    `${c.dim('URL:')}     ${c.green(request.url ?? '(not set)')}`,
-    `${c.dim('Headers:')} ${c.gray(JSON.stringify(request.headers ?? {}, null, 2))}`,
+    `${c.dim('URL:')}     ${c.green(request.url ? redactUrl(request.url) : '(not set)')}`,
+    `${c.dim('Headers:')} ${c.gray(JSON.stringify(redactHeaders(request.headers ?? {}), null, 2))}`,
     `${c.dim('Query:')}   ${c.gray(JSON.stringify(request.query ?? []))}`,
     `${c.dim('Body:')}    ${c.gray(JSON.stringify(request.body ?? null, null, 2))}`,
     `${c.dim('Auth:')}    ${c.magenta(JSON.stringify(request.auth ?? null))}`,
@@ -64,6 +71,10 @@ export async function execute(ctx, template, { historyName, envName } = {}) {
 
   const dryRun = Boolean(flags['dry-run']);
 
+  if (flags.retry !== undefined && Number(flags.retry) > 0 && /^(POST|PATCH)$/i.test(template.method ?? '')) {
+    err.write(c.yellow(`warning: --retry is ignored for ${template.method.toUpperCase()} (retrying could repeat a write)\n`));
+  }
+
   const sent = await sendTemplate(ctx.store, template, {
     envName: envName ?? last(flags.env),
     cliVars: cliVarsFromFlags(flags),
@@ -71,6 +82,7 @@ export async function execute(ctx, template, { historyName, envName } = {}) {
     historyName,
     record: !flags['no-history'],
     dryRun,
+    assumeYes: Boolean(flags.yes),
     onPrepared: flags.verbose ? (resolved) => printRequestVerbose(ctx, resolved) : undefined,
   });
 

@@ -69,6 +69,7 @@ export async function cmdFlow(ctx) {
     envName: last(flags.env) ?? def.env,
     cliVars: varsFromFlags(flags),
     record: !flags['no-history'],
+    assumeYes: Boolean(flags.yes),
     onStep: human ? (step) => printStep(ctx, step) : undefined,
   });
 
