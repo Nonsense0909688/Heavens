@@ -11,3 +11,4 @@ export { cmdInit } from './init.js';
 
 export { cmdImport, cmdExport } from './import-export.js';
 export { cmdMock } from './mock.js';
+export { cmdCompletion } from './completion.js';

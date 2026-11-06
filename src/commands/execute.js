@@ -4,7 +4,7 @@ import { HeavenError, EXIT } from '../core/errors.js';
 import { last } from '../cli/value-parsers.js';
 import { sendTemplate } from '../request/send.js';
 import { evaluate } from '../assertions/evaluate.js';
-import { checkOutputFlag, cliVarsFromFlags, applyInsecure } from './shared.js';
+import { checkOutputFlag, cliVarsFromFlags, warnInsecure } from './shared.js';
 import { showResponse, printRequestVerbose } from './show-response.js';
 
 /** Flags that control how the response body is consumed. */
@@ -18,6 +18,18 @@ function engineOptions(flags, out) {
       throw new HeavenError('--max-buffer must be a positive number of megabytes');
     engine.maxBuffer = Math.floor(megabytes * 1024 * 1024);
   }
+  if (flags['cookie-jar']) engine.cookieJarFile = flags['cookie-jar'];
+  if (flags.retry !== undefined) {
+    const n = Number(flags.retry);
+    if (!Number.isInteger(n) || n < 0 || n > 10) throw new HeavenError('--retry must be an integer 0-10');
+    engine.retry = n;
+  }
+  if (flags['retry-delay'] !== undefined) {
+    const ms = Number(flags['retry-delay']);
+    if (!Number.isFinite(ms) || ms < 0) throw new HeavenError('--retry-delay must be a non-negative number of milliseconds');
+    engine.retryDelay = ms;
+  }
+  if (flags.proxy) engine.proxy = flags.proxy;
   return engine;
 }
 
@@ -48,10 +60,7 @@ export async function execute(ctx, template, { historyName, envName } = {}) {
   const { flags, err, c, out } = ctx;
   checkOutputFlag(flags);
 
-  if (flags.insecure) {
-    applyInsecure(flags);
-    err.write(c.yellow('warning: TLS certificate verification is disabled (--insecure)\n'));
-  }
+  warnInsecure(ctx);
 
   const dryRun = Boolean(flags['dry-run']);
 

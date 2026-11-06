@@ -32,15 +32,13 @@ export const VALUE_FLAGS = {
   'requires-env': {},
   format: {},
   port: {},
-  'plugin-dir': {},
-  'watch-interval': {},
-  'ramp-up': {},
-  'junit-output': {},
-  'html-report': {},
-  'json-report': {},
   'assert-header': { list: true },
   'assert-body': { list: true },
   'json-schema': {},
+  'cookie-jar': {},
+  retry: {},
+  'retry-delay': {},
+  proxy: {},
 };
 
 // On/off flags.  name -> short alias (or null)
@@ -63,8 +61,6 @@ export const BOOL_FLAGS = {
   protected: null,
   'dry-run': null,
   curl: null,
-  watch: null,
-  mock: null,
   color: null,
 };
 

@@ -6,13 +6,14 @@ import { prepare } from '../request/prepare.js';
 import { resolveEnv, buildVars } from '../request/send.js';
 import { runBench } from '../features/bench/run-bench.js';
 import { statusColor, formatMs } from '../render/index.js';
-import { isMethod, isJsonOutput, printJson, checkOutputFlag, cliVarsFromFlags, applyInsecure, numberFlag } from './shared.js';
+import { isMethod, isJsonOutput, printJson, checkOutputFlag, cliVarsFromFlags, warnInsecure, numberFlag } from './shared.js';
+import { looksLikeUrl } from '../request/url.js';
 
-/** `bench get /x`, `bench /x`, `bench https://...`, or `bench saved-name`. */
+/** `bench get /x`, `bench /x`, `bench https://...`, `bench example.com/x`, or `bench saved-name`. */
 function targetFromArgs(ctx) {
   const { pos, flags, store } = ctx;
   if (isMethod(pos[1]) && pos[2]) return templateFromFlags(flags, pos[1], pos[2]);
-  if (pos[1] && (/^https?:\/\//i.test(pos[1]) || pos[1].startsWith('/'))) return templateFromFlags(flags, 'get', pos[1]);
+  if (pos[1] && looksLikeUrl(pos[1])) return templateFromFlags(flags, 'get', pos[1]);
   if (pos[1]) return mergeTemplate(store.getRequest(pos[1]), templateFromFlags(flags));
   throw new HeavenError('Usage: heaven bench NAME|URL [-n 100] [-c 10]');
 }
@@ -47,7 +48,7 @@ export async function cmdBench(ctx) {
   const template = targetFromArgs(ctx);
   const { count, concurrency } = readLimits(flags);
 
-  applyInsecure(flags);
+  warnInsecure(ctx);
   const { env } = resolveEnv(store, last(flags.env));
   const resolved = prepare(template, { env, vars: buildVars(env, {}, cliVarsFromFlags(flags)) });
 
@@ -60,6 +61,7 @@ export async function cmdBench(ctx) {
   const report = await runBench(resolved, {
     count, concurrency,
     onProgress: showProgress ? (done, total) => err.write(`\r${c.dim(`${done}/${total}`)}`) : undefined,
+    engine: { retry: flags.retry !== undefined ? Number(flags.retry) : 0, retryDelay: flags['retry-delay'] !== undefined ? Number(flags['retry-delay']) : 500, proxy: flags.proxy, cookieJarFile: flags['cookie-jar'] },
   });
   if (showProgress) err.write('\r\x1b[K');                  // erase the progress line
 

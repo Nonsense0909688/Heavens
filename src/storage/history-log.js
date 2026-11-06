@@ -21,7 +21,7 @@ export function readHistory(file) {
 /** Append an entry, assigning the next id. Returns the id. */
 export function appendHistory(file, entry) {
   let all = readHistory(file);
-  const id = (all.length ? all[all.length - 1].id : 0) + 1;
+  const id = all.reduce((max, e) => Math.max(max, Number(e?.id) || 0), 0) + 1;
   const full = { id, time: new Date().toISOString(), ...entry };
   all.push(full);
 

@@ -10,7 +10,7 @@ import {
   printJson,
   checkOutputFlag,
   varsFromFlags,
-  applyInsecure,
+  warnInsecure,
 } from './shared.js';
 
 function loadWorkflow(file) {
@@ -60,7 +60,7 @@ export async function cmdFlow(ctx) {
 
   const def = loadWorkflow(file);
   const human = !isJsonOutput(ctx);
-  applyInsecure(flags);
+  warnInsecure(ctx);
 
   if (human) out.write(`${c.bold(def.name || path.basename(file))}\n`);
 

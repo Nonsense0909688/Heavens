@@ -42,6 +42,7 @@ IMPORT, EXPORT, AND EXTEND
   export FILE.json --format openapi           Export templates as OpenAPI
   heaven get URL --curl                        Print a cURL command without sending
   mock fixtures.json --port 8080               Run a local JSON mock server
+  completion bash|zsh|powershell                 Print shell completion script
 
 COMPARE, REPLAY, TEST
   compare   Send one request to two environments and diff the results
@@ -68,6 +69,10 @@ REQUEST OPTIONS
   -t, --timeout MS          Abort after MS milliseconds
       --no-follow           Do not follow redirects
   -k, --insecure            Skip TLS certificate verification
+      --proxy URL           Use an HTTP(S) proxy (needs optional "undici" pkg; env HTTP_PROXY also works)
+      --retry N             Retry network errors and 429/5xx up to N times
+      --retry-delay MS      Base delay between retries (default 500)
+      --cookie-jar FILE     Persist cookies in FILE across requests
 
 OUTPUT OPTIONS
   -i, --include             Include response status and headers
@@ -84,6 +89,9 @@ ASSERTION OPTIONS
   --expect-json path=value          Require a JSON field value
   --expect-contains TEXT            Require text in the body
   --expect-time MS                  Require a response within MS milliseconds
+  --assert-header "Name: value"     Require a response header (repeatable)
+  --assert-body TEXT                Require text in the body (repeatable)
+  --json-schema FILE|JSON          Validate the JSON body against a schema
 
 SAFETY AND HISTORY OPTIONS
   --protected               Mark an environment as protected (env set)
@@ -106,6 +114,7 @@ export const COMMANDS = {
   import: `heaven import FILE --format curl|postman|openapi\nPrint imported request templates as JSON.`,
   export: `heaven export FILE.json --format openapi\nExport request templates as an OpenAPI document.`,
   mock: `heaven mock fixtures.json [--port 8080]\nServe fixtures keyed by \"METHOD /path\".`,
+  completion: `heaven completion bash|zsh|powershell\nPrint a shell completion script to stdout. Load with: eval "$(heaven completion bash)"`,
   request: `
 heaven METHOD URL [options]
 

@@ -42,6 +42,14 @@ export function applyInsecure(flags) {
   if (flags.insecure) process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 
+/** Apply --insecure and warn (used by execute, bench, and flow alike). */
+export function warnInsecure(ctx) {
+  if (ctx.flags.insecure) {
+    applyInsecure(ctx.flags);
+    ctx.err.write(ctx.c.yellow('warning: TLS certificate verification is disabled (--insecure)\n'));
+  }
+}
+
 /** "foo" or "-5" style numeric flag -> validated number, or the default when absent. */
 export function numberFlag(value, fallback) {
   return value !== undefined ? Number(value) : fallback;
