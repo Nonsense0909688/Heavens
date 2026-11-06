@@ -16,7 +16,10 @@ export function toNetworkError(e, req) {
   const code = e?.cause?.code || e?.code;
   if (code === 'ERR_INVALID_URL') return new HeavenError(`Invalid URL: ${req.url}`);
   if (code === 'ECONNREFUSED') return new NetworkError(`Connection refused (${req.url}). Is the server running?`, code);
-  if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') return new NetworkError(`DNS lookup failed for ${new URL(req.url).hostname}`, code);
+  if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
+    let host; try { host = new URL(req.url).hostname; } catch { return new HeavenError(`Invalid URL: ${req.url}`); }
+    return new NetworkError(`DNS lookup failed for ${host}`, code);
+  }
   if (code === 'ECONNRESET') return new NetworkError('Connection reset by server', code);
   if (TLS_CODES.has(code)) {
     return new NetworkError(`TLS certificate verification failed (${code}). Use --insecure only for targets you trust.`, code);
