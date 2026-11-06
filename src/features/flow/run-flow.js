@@ -37,14 +37,14 @@ function runExtracts(step, res, vars, result) {
 
 /** Execute one step and fill in its `result` record. */
 async function runStep(step, index, ctx) {
-  const { def, store, vars, envName, cliVars, record } = ctx;
+  const { store, vars, envName, cliVars, record, assumeYes } = ctx;
   const name = step.name || step.use || `step ${index + 1}`;
   const template = stepTemplate(step, store, index);
   const result = { index: index + 1, name, method: template.method, url: template.url, ok: false, checks: [], extracted: [] };
 
   try {
     const { res } = await sendTemplate(store, template, {
-      envName, extraVars: vars, cliVars, record, historyName: name,
+      envName, extraVars: vars, cliVars, record, historyName: name, assumeYes,
     });
     Object.assign(result, { status: res.status, timeMs: Math.round(res.timeMs), size: res.size });
 
@@ -67,11 +67,11 @@ async function runStep(step, index, ctx) {
   return result;
 }
 
-export async function runFlow(def, { store, envName, cliVars, record = true, onStep }) {
+export async function runFlow(def, { store, envName, cliVars, record = true, assumeYes = false, onStep }) {
   if (!def || !Array.isArray(def.steps) || def.steps.length === 0) {
     throw new HeavenError('Workflow file needs a non-empty "steps" array');
   }
-  const ctx = { def, store, envName, cliVars, record, vars: { ...(def.vars || {}) } };
+  const ctx = { store, envName, cliVars, record, assumeYes, vars: { ...(def.vars || {}) } };
   const results = [];
   let exitCode = EXIT.OK;
 

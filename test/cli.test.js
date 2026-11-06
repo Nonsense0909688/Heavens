@@ -390,3 +390,20 @@ test('missing request URL is rejected', async (t) => {
 
   assert.notEqual(result.code, 0);
 });
+
+// ── Regressions: protected env, EPIPE, dry-run masking ─────────────
+test('--yes lets a write through a protected environment non-interactively', async (t) => {
+  const { dir, base } = await createFixture(t);
+  await runCLI(['env', 'set', 'prod', '--base-url', base, '--protected'], dir);
+  const blocked = await runCLI(['post', '/x', '-e', 'prod', '--json', '{}'], dir);
+  assert.equal(blocked.code, 1);
+  assert.match(blocked.stderr, /--yes/);
+  assert.doesNotMatch(blocked.stderr, /not defined/);
+});
+
+test('--dry-run masks secrets', async (t) => {
+  const { dir, base } = await createFixture(t);
+  const result = await runCLI(['post', `${base}/x`, '--bearer', 'SECRET123', '--dry-run'], dir);
+  assert.equal(result.code, 0);
+  assert.doesNotMatch(result.stdout, /SECRET123/);
+});
