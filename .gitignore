@@ -1,1 +1,7 @@
 node_modules/
+.heaven/history.jsonl
+*.tmp
+*.log
+.DS_Store
+# NOTE: .heaven/config.json and .heaven/requests.json are intentionally
+# tracked (see `heaven init`) — keep secrets in {{$env.NAME}} references.

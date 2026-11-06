@@ -1,0 +1,6 @@
+node_modules
+.git
+.heaven/history.jsonl
+*.log
+*.tmp
+.DS_Store

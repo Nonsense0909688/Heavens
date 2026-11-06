@@ -1,14 +1,12 @@
 FROM node:20-alpine
 
-# Create app directory
 WORKDIR /usr/src/app
 
-# Install dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
-# Bundle app source
 COPY . .
+RUN chmod +x bin/heaven.js
 
-# Set the CLI entrypoint
-ENTRYPOINT ["node", "src/cli.js"]
+ENTRYPOINT ["node", "bin/heaven.js"]
+CMD ["help"]

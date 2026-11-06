@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import { HeavenError, EXIT } from './core/errors.js';
 import { GENERAL, COMMANDS } from './cli/help.js';
 import * as cmd from './commands/index.js';
+import { looksLikeUrl } from './request/url.js';
 
 const version = () => JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
-const looksLikeUrl = (s) => /^(https?:\/\/|\/|localhost[:/]|\d{1,3}(\.\d{1,3}){3}[:/])/i.test(s);
 
 // command word -> handler
 const COMMAND_TABLE = {
@@ -24,6 +24,7 @@ const COMMAND_TABLE = {
   import: cmd.cmdImport,
   export: cmd.cmdExport,
   mock: cmd.cmdMock,
+  completion: cmd.cmdCompletion,
 };
 
 export async function dispatch(ctx) {

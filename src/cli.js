@@ -14,6 +14,7 @@ export async function main(argv, io = {}) {
   try {
     const { _: pos, flags } = parseArgs(argv);
     if (flags['no-color']) process.env.NO_COLOR = '1';
+    if (flags.color) { process.env.FORCE_COLOR = '1'; delete process.env.NO_COLOR; }
 
     const ctx = {
       pos,
