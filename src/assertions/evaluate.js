@@ -3,6 +3,7 @@
 import { isDeepStrictEqual } from 'node:util';
 import { getPath } from '../core/jsonpath.js';
 import { normalizeExpect } from './parse.js';
+import { validateJsonSchema } from './schema.js';
 
 const typeOf = (v) => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v);
 const show = (v) => { const s = JSON.stringify(v); return s && s.length > 60 ? s.slice(0, 57) + '…' : s; };
@@ -10,9 +11,13 @@ const check = (ok, label, detail) => ({ ok, label, detail });
 
 // ── status / time / headers / body text ──────────────────────────────
 
-/** spec is 200, "2xx", or a list of those. */
+/** spec is 200, "200", "2xx", or a list of those. */
 const statusMatches = (spec, status) =>
-  [].concat(spec).some((s) => (typeof s === 'number' ? s === status : String(status)[0] === s[0]));
+  [].concat(spec).some((s) => {
+    if (typeof s === 'number') return s === status;
+    if (/^\d{3}$/.test(String(s).trim())) return Number(s) === status;
+    return String(status)[0] === String(s).trim().toLowerCase()[0];
+  });
 
 function checkStatus(spec, res) {
   const ok = statusMatches(spec, res.status);
@@ -101,6 +106,14 @@ export function evaluate(expectRaw, res) {
   for (const [name, want] of Object.entries(e.headers || {})) checks.push(checkHeader(name, want, res));
   for (const needle of e.contains || []) checks.push(checkContains(needle, res));
   for (const j of e.json || []) checks.push(checkJson(j, res));
+  const schema = e.jsonSchema ?? e.schema;
+  if (schema !== undefined) {
+    if (res.json === undefined) checks.push(check(false, 'json schema', 'response body is not JSON'));
+    else {
+      const errors = validateJsonSchema(res.json, schema);
+      checks.push(check(errors.length === 0, 'json schema', errors.length ? errors.slice(0, 5).join('; ') : undefined));
+    }
+  }
 
   return { passed: checks.every((c) => c.ok), checks };
 }
