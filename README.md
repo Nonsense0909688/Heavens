@@ -1,9 +1,6 @@
-# Heaven ☁️
+<div align="center">
 
-[![CI Pipeline](https://github.com/Nonsense0909688/Heavens/actions/workflows/ci.yml/badge.svg)](https://github.com/Nonsense0909688/Heavens/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Code Style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+# Heaven ☁️
 
 **Your terminal API workshop.**
 
@@ -12,11 +9,37 @@ so you never retype it, point it at dev or prod with one flag, compare the two,
 chain requests into a workflow, and load-test the result. All from your terminal,
 with no app to open and no account to create.
 
+[![CI Pipeline](https://github.com/Nonsense0909688/Heavens/actions/workflows/ci.yml/badge.svg?style=flat-square)](https://github.com/Nonsense0909688/Heavens/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/release/Nonsense0909688/Heavens?style=flat-square&label=Release)](https://github.com/Nonsense0909688/Heavens/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg?style=flat-square)](https://nodejs.org/)
+
+[![GitHub Stars](https://img.shields.io/github/stars/Nonsense0909688/Heavens?style=flat-square&label=Stars)](https://github.com/Nonsense0909688/Heavens/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Nonsense0909688/Heavens?style=flat-square&label=Forks)](https://github.com/Nonsense0909688/Heavens/forks)
+[![GitHub Issues](https://img.shields.io/github/issues/Nonsense0909688/Heavens?style=flat-square&label=Issues)](https://github.com/Nonsense0909688/Heavens/issues)
+[![Code Style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
+</div>
+
 ```bash
-heaven get https://api.github.com/users/octocat
+heaven get https://api.github.com/users/Nonsense0909688
 ```
 
 That's it. That's a request. The rest of this page shows you what else you can do.
+
+---
+
+## Table of Contents
+
+- [Install](#install)
+- [Your first five minutes](#your-first-five-minutes)
+- [What's in the box](#whats-in-the-box)
+- [Features](#features)
+- [A few promises Heaven makes](#a-few-promises-heaven-makes)
+- [Getting help](#getting-help)
+- [Star History](#star-history)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -37,7 +60,7 @@ Now `heaven` (and the short alias `hv`) work anywhere on your machine.
 Not ready to link it? You can always run it directly:
 
 ```bash
-node bin/heaven.js get https://api.github.com/users/octocat
+node bin/heaven.js get https://api.github.com/users/Nonsense0909688
 ```
 
 ---
@@ -47,7 +70,7 @@ node bin/heaven.js get https://api.github.com/users/octocat
 **1. Send something.**
 
 ```bash
-heaven get https://api.github.com/users/octocat
+heaven get https://api.github.com/users/Nonsense0909688
 heaven post https://httpbin.org/post --json @body.json
 ```
 
@@ -102,6 +125,24 @@ The full guide lives in [DOCS.md](DOCS.md).
 
 ---
 
+## Features
+
+- **One-command HTTP** — `get`, `post`, `put`, `patch`, `delete` with headers,
+  query params, JSON bodies, multipart, and file uploads.
+- **Environments** — switch dev / staging / prod with `--env` and per-env variables.
+- **Saved requests** — save, re-run, and tweak any call on the fly.
+- **Secret-safe** — tokens are scrubbed before history is written and Heaven warns
+  before saving them to disk.
+- **Script-friendly** — stdout is pure response data; timing and warnings go to
+  stderr, so `heaven get /users | jq .` just works.
+- **Expectations** — assert on status, JSON paths, body, headers, and response time.
+- **Workflows** — chain requests with `flow`, branching, and result passing.
+- **Benchmarking** — load-test an endpoint with `bench` and compare runs.
+- **Compare** — diff the same request across environments.
+- **History & replay** — look back at what you sent and replay it verbatim.
+
+---
+
 ## A few promises Heaven makes
 
 - **Your secrets stay yours.** Tokens and passwords are scrubbed before anything is
@@ -128,3 +169,40 @@ Something broken or confusing? Set `HEAVEN_DEBUG=1` to see full error details, a
 check [Troubleshooting](DOCS.md#troubleshooting).
 
 Curious how the code is organised? See [docs/architecture.md](docs/architecture.md).
+
+---
+
+## Star History
+
+If Heaven saves you time, please give it a star ⭐ — it helps others find the project.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Nonsense0909688/Heavens&type=Date)](https://star-history.com/#Nonsense0909688/Heavens&Date)
+
+---
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+
+- Browse [open issues](https://github.com/Nonsense0909688/Heavens/issues) and
+  [pull requests](https://github.com/Nonsense0909688/Heavens/pulls).
+- Open an issue or PR from GitHub — please include steps to reproduce for bugs
+  and a clear use case for features.
+
+---
+
+## License
+
+[MIT](LICENSE) © 2026 Anish Nandi.
+
+---
+
+<div align="center">
+
+**[Full documentation](DOCS.md)** ·
+**[Issues](https://github.com/Nonsense0909688/Heavens/issues)** ·
+**[Releases](https://github.com/Nonsense0909688/Heavens/releases)**
+
+Made with ☁️ for terminal-first API work.
+
+</div>
